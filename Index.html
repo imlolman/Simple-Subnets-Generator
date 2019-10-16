@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Subnets Generator</title>
+  <style>
+  body{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  </style>
+</head>
+<body>
+  <h1>Simple Subnets Generator</h1>
+  Enter IP: <input type="text" id="ip" value="10.0.0.0"> &nbsp;&nbsp;&nbsp;&nbsp; Enter Subnets to Create: <input type="number" id="subnets" value='5'> &nbsp;&nbsp; <button onclick="generateSubnets()" id="submitBTN">Generate Subnets</button>
+  <pre id="data"></pre>
+</body>
+<script>
+
+document.getElementById('submitBTN').click()
+
+function generateSubnets(){
+  document.getElementById('data').innerHTML = ""
+  ip = document.getElementById('ip').value
+  subnets = parseInt(document.getElementById('subnets').value)
+  generate(ip,subnets)
+}
+
+function generate(ip,subnets){
+  showHeading()
+  ipArray = ip.split('.')
+
+  for(ips in ipArray){
+    if(parseInt(ipArray[ips]) > 255 || parseInt(ipArray[ips]) < 0){
+      add('IP Address Error, No Subnets Calculated.....');
+      return -1
+    }
+  }
+
+  classs = `D or E`
+  if(ipArray[0] < 128){
+    classs = `A`
+  }else if(ipArray[0] < 192){
+    classs = `B`
+  }else if(ipArray[0] < 223){
+    classs = `C`
+  }
+
+  if(classs == `D or E`){
+    add('IP Lies in Class D or E, No Subnets Calculated.....');
+    return -1
+  }
+
+  add()
+  add(`<b>`+ip+` Belongs to Class `+ classs + `</b>`)
+
+  length = parseInt(subnets).toString(2).length
+
+  for(i=1;i<=subnets;i++){
+    add()
+    if(classs==`A`){
+      mainLine = `'`+i.toString()+`'`+`  `+`'`+makeItlength((i-1).toString(2),length)+`'`+`  `+parseInt(ipArray[0]).toString()+`.`+makeItlength((i-1).toString(2),length)+`<b>`+`X`.repeat(8-length)+`.`+`X`.repeat(8)+`.`+`X`.repeat(8)+`</b>`
+
+      topLine = `  Network Address:  `+parseInt(ipArray[0]).toString()+`.`+makeItlength((i-1).toString(2),length)+`0`.repeat(8-length)+`.`+`0`.repeat(8)+`.`+`0`.repeat(8)+`  `+parseInt(ipArray[0]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`0`.repeat(8-length))).toString()+`.`+`0`+`.`+`0`
+      bottomLine = `Broadcast Address:  `+parseInt(ipArray[0]).toString()+`.`+makeItlength((i-1).toString(2),length)+`1`.repeat(8-length)+`.`+`1`.repeat(8)+`.`+`1`.repeat(8)+`  `+parseInt(ipArray[0]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`1`.repeat(8-length))).toString()+`.`+`255`+`.`+`255`
+
+      mainLine2 = mainLine + `                     Range:  <b>`+parseInt(ipArray[0]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`0`.repeat(8-length))).toString()+`.`+`0`+`.`+`1`+`  -  `+parseInt(ipArray[0]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`1`.repeat(8-length))).toString()+`.`+`255`+`.`+`254`+`</b>`
+      add(' '.repeat(mainLine.length+2)+topLine)
+      add(mainLine2)
+      add(' '.repeat(mainLine.length+2)+bottomLine)
+    }
+
+    if(classs==`B`){
+      mainLine = `'`+i.toString()+`'`+`  `+`'`+makeItlength((i-1).toString(2),length)+`'`+`  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+makeItlength((i-1).toString(2),length)+`<b>`+`X`.repeat(8-length)+`.`+`X`.repeat(8)+`</b>`
+
+      topLine = `  Network Address:  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+makeItlength((i-1).toString(2),length)+`0`.repeat(8-length)+`.`+`0`.repeat(8)+`  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`0`.repeat(8-length))).toString()+`.`+`0`
+      bottomLine = `Broadcast Address:  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+makeItlength((i-1).toString(2),length)+`1`.repeat(8-length)+`.`+`1`.repeat(8)+`  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`1`.repeat(8-length))).toString()+`.`+`255`
+
+      mainLine2 = mainLine + `                     Range:  <b>`+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`0`.repeat(8-length))).toString()+`.`+`1`+`  -  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`1`.repeat(8-length))).toString()+`.`+`254`+`</b>`
+      add(' '.repeat(mainLine.length+2)+topLine)
+      add(mainLine2)
+      add(' '.repeat(mainLine.length+2)+bottomLine)
+    }
+
+    if(classs==`C`){
+      mainLine = `'`+i.toString()+`'`+`  `+`'`+makeItlength((i-1).toString(2),length)+`'`+`  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+parseInt(ipArray[2]).toString()+`.`+makeItlength((i-1).toString(2),length)+`<b>`+`X`.repeat(8-length)+`</b>`
+
+      topLine = `  Network Address:  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+parseInt(ipArray[2]).toString()+`.`+makeItlength((i-1).toString(2),length)+`0`.repeat(8-length)+`  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+parseInt(ipArray[2]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`0`.repeat(8-length))).toString()
+      bottomLine = `Broadcast Address:  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+parseInt(ipArray[2]).toString()+`.`+makeItlength((i-1).toString(2),length)+`1`.repeat(8-length)+`  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+parseInt(ipArray[2]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`1`.repeat(8-length))).toString()
+
+      mainLine2 = mainLine + `                     Range:  <b>`+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+parseInt(ipArray[2]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`0`.repeat(8-length))).toString()+`  -  `+parseInt(ipArray[0]).toString()+`.`+parseInt(ipArray[1]).toString()+`.`+parseInt(ipArray[2]).toString()+`.`+bin_to_dec(parseInt(makeItlength((i-1).toString(2),length)+`1`.repeat(8-length))).toString()+`</b>`
+      add(' '.repeat(mainLine.length+2)+topLine)
+      add(mainLine2)
+      add(' '.repeat(mainLine.length+2)+bottomLine)
+    }
+  }
+  add()
+  add(`Calculating Subnet Mask`)
+  add(`IP: `+ip+` Falls Under Class `+classs)
+  if(classs == `A`){
+    add(`Subnet Mask for Class A: 255.0.0.0   11111111.00000000.00000000.00000000`)
+    sub = length + 8
+    add(`8 + `+length.toString()+` = `+sub)
+  }
+  if(classs == `B`){
+    add(`Subnet for Class A: 255.255.0.0   11111111.11111111.00000000.00000000`)
+    sub = length + 16
+    add(`16 + `+length.toString()+` = `+sub)
+  }
+  if(classs == `C`){
+    add(`Subnet for Class A: 255.255.255.0   11111111.11111111.11111111.0000000`)
+    sub = length + 24
+    add(`24 + `+length.toString()+` = `+sub)
+  }
+  finalMask = '1'.repeat(sub)+'0'.repeat(32-sub)
+  add(`Subnet Mask for Subnets = `+finalMask.match(/.{1,8}/g).join('.')+` = <b>`+finalMask.match(/.{1,8}/g).map(bin_to_dec).join('.')+`</b>`)
+  
+}
+
+  function makeItlength(data,length){
+    return '0'.repeat(length - data.length)+data
+  }
+
+  function showHeading(){    
+add(`Question:- Subnet <b>`+ip+`</b> n/w into <b>`+subnets.toString()+`</b> subnets and For Each of the Subnets Find
+1) Network Address
+2) Broadcast Address
+3) Range of Address Available
+4) Subnet Mask For Each Of the Subnets`)
+add()
+add(`Solution:-`)
+  }
+  
+
+  function add(data = ``){
+    document.getElementById('data').innerHTML = document.getElementById('data').innerHTML+'\n'+data;
+  }
+
+  function bin_to_dec(bstr) { 
+    return parseInt((bstr + '')
+    .replace(/[^01]/gi, ''), 2);
+  }  
+</script>
+</html>
